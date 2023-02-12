@@ -1,15 +1,13 @@
 package com.spotify.aouth2.tests;
 
+import com.spotify.aouth2.api.application.api.PlayListApi;
 import com.spotify.aouth2.pojo.Playlist;
 import com.spotify.aouth2.pojo.PlaylistError;
+import io.restassured.response.Response;
 import org.assertj.core.api.SoftAssertions;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-
-import static com.spotify.aouth2.api.SpecBuilder.getRequestSpecification;
-import static com.spotify.aouth2.api.SpecBuilder.getResponseSpecification;
-import static io.restassured.RestAssured.given;
 
 public class PlayListTests {
     private static String id;
@@ -33,16 +31,9 @@ public class PlayListTests {
                 .setDescription("New Playlist description")
                 .setPublic(false);
 
-        Playlist playlistResponse = given(getRequestSpecification())
-                .body(playlist)
-                .when()
-                .post("users/31v5r5wfy4gnsl7c5eujg2fpf4oq/playlists")
-                .then()
-                .spec(getResponseSpecification())
-                .assertThat().statusCode(201)
-                .extract()
-                .response()
-                .as(Playlist.class);
+        Response postResponse = PlayListApi.post(playlist);
+        postResponse.then().assertThat().statusCode(201);
+        Playlist playlistResponse = postResponse.as(Playlist.class);
 
         id = playlistResponse.getId();
 
@@ -53,47 +44,29 @@ public class PlayListTests {
 
     @Test
     public void getPlayLists() {
-        given()
-                .spec(getRequestSpecification())
-                .when()
-                .get("/playlists/" + id)
-                .then()
-                .spec(getResponseSpecification())
-                .assertThat().statusCode(200);
+        Response getResponse =
+                PlayListApi.get(id);
+        getResponse.then().assertThat().statusCode(200);
     }
 
     @Test
     public void updateThePlayList() {
 
-
         Playlist playlistUpdated = new Playlist()
                 .setName("My Updated Playlist123")
                 .setDescription("Updated Playlist123 description")
                 .setPublic(false);
-
-        given(getRequestSpecification())
-                .body(playlistUpdated)
-                .when()
-                .put("/playlists/" + id)
-                .then()
-                .spec(getResponseSpecification())
-                .assertThat().statusCode(200);
+        PlayListApi
+                .put(id, playlistUpdated)
+                .then().assertThat().statusCode(200);
     }
 
     @Test(dependsOnMethods = {"updateThePlayList"})
     public void getPlayListsAfterUpdate() {
 
-        Playlist playlistResponseAfterUpdate =
-                given()
-                        .spec(getRequestSpecification())
-                        .when()
-                        .get("/playlists/" + id)
-                        .then()
-                        .spec(getResponseSpecification())
-                        .assertThat().statusCode(200)
-                        .extract()
-                        .response()
-                        .as(Playlist.class);
+        Response getResponseAfterUpdate = PlayListApi.get(id);
+        getResponseAfterUpdate.then().assertThat().statusCode(200);
+        Playlist playlistResponseAfterUpdate = getResponseAfterUpdate.as(Playlist.class);
 
         softly.assertThat(playlistResponseAfterUpdate.getPublic()).isEqualTo(false);
         softly.assertThat(playlistResponseAfterUpdate.getName()).isEqualTo("My Updated Playlist123");
@@ -111,18 +84,9 @@ public class PlayListTests {
                 .setPublic(false);
 
 
-        PlaylistError playlistError =
-                given(getRequestSpecification())
-                        .body(playlistWithNoName)
-                        .when()
-                        .post("users/31v5r5wfy4gnsl7c5eujg2fpf4oq/playlists")
-                        .then()
-                        .spec(getResponseSpecification())
-                        .assertThat().statusCode(400)
-                        .extract()
-                        .response()
-                        .as(PlaylistError.class);
-
+        Response responsePlaylistError = PlayListApi.post(playlistWithNoName);
+        responsePlaylistError.then().assertThat().statusCode(400);
+        PlaylistError playlistError = responsePlaylistError.as(PlaylistError.class);
         softly.assertThat(playlistError.getError().getStatus()).isEqualTo(400);
         softly.assertThat(playlistError.getError().getMessage())
                 .isEqualTo("Missing required field: name");
@@ -136,24 +100,9 @@ public class PlayListTests {
                 .setName("My New Playlist123")
                 .setDescription("New Playlist123 description")
                 .setPublic(false);
-
-        PlaylistError playlistError =
-                given()
-                        .baseUri("https://api.spotify.com")
-                        .header("Authorization", "Bearer " + "accessToken")
-                        .header("Content-Type", "application/json")
-                        .basePath("/v1/")
-                        .log().all()
-                        .body(playlist)
-                        .when()
-                        .post("users/31v5r5wfy4gnsl7c5eujg2fpf4oq/playlists")
-                        .then()
-                        .spec(getResponseSpecification())
-                        .assertThat().statusCode(401)
-                        .extract()
-                        .response()
-                        .as(PlaylistError.class);
-
+        String accessToke = "12345";
+        Response responsePlaylistError = PlayListApi.post(accessToke, playlist);
+        PlaylistError playlistError = responsePlaylistError.as(PlaylistError.class);
         softly.assertThat(playlistError.getError().getStatus()).isEqualTo(401);
         softly.assertThat(playlistError.getError().getMessage()).isEqualTo("Invalid access token");
     }
