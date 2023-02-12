@@ -2,34 +2,18 @@ package com.spotify.aouth2.pojo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+@Value
+@Builder
+@Jacksonized
 @JsonInclude(JsonInclude.Include.NON_NULL)
 
 public class PlaylistInnerError {
-
     @JsonProperty("status")
-    private Integer status;
+    Integer status;
     @JsonProperty("message")
-    private String message;
-
-    @JsonProperty("status")
-    public Integer getStatus() {
-        return status;
-    }
-
-    @JsonProperty("status")
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    @JsonProperty("message")
-    public String getMessage() {
-        return message;
-    }
-
-    @JsonProperty("message")
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
+    String message;
 }

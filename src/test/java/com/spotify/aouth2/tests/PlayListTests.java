@@ -56,9 +56,8 @@ public class PlayListTests {
 
     @Test
     public void failedToCreatePlayListWithNoName() {
-        Playlist playlistWithNoName = new Playlist()
-                .setDescription("New Playlist123 description")
-                .setPublic(false);
+        Playlist playlistWithNoName = Playlist
+                .builder().description("New Playlist123 description")._public(false).build();
 
         Response responsePlaylistError = PlayListApi.post(playlistWithNoName);
         responsePlaylistError.then().assertThat().statusCode(400);
@@ -76,17 +75,14 @@ public class PlayListTests {
     }
 
     private void assertPlaylist(Playlist playlist, Playlist playlistResponse) {
-        softly.assertThat(playlistResponse.getPublic()).isEqualTo(playlist.getPublic());
+        softly.assertThat(playlistResponse.get_public()).isEqualTo(playlist.get_public());
         softly.assertThat(playlistResponse.getName()).isEqualTo(playlist.getName());
         softly.assertThat(playlistResponse.getDescription()).isEqualTo(playlist.getDescription());
         softly.assertAll();
     }
 
     public Playlist playlist(String name, String description, Boolean _public) {
-        return new Playlist()
-                .setName(name)
-                .setDescription(description)
-                .setPublic(_public);
+        return Playlist.builder().name(name).description(description)._public(_public).build();
     }
 
     private void assertErrorResponse(PlaylistError playlistError, int expected, String expected1) {
