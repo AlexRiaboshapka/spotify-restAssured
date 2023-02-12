@@ -7,19 +7,22 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 
+import static com.spotify.aouth2.api.ApiRoute.*;
+
 public class SpecBuilder {
 
     public static RequestSpecification getRequestSpecification() {
         return new RequestSpecBuilder()
-                .setBaseUri("https://api.spotify.com")
+                .setBaseUri(BASE_URL)
                 .addHeader("Content-Type", "application/json")
-                .setBasePath("/v1/")
+                .setBasePath(BASE_PATH)
                 .log(LogDetail.ALL).build();
     }
 
     public static RequestSpecification getAccountRequestSpecification() {
         return new RequestSpecBuilder()
-                .setBaseUri("https://accounts.spotify.com/api/token")
+                .setBaseUri(BASE_URL_ACCOUNT)
+                .setBasePath(API + TOKEN)
                 .setContentType(ContentType.URLENC)
                 .log(LogDetail.ALL).build();
     }

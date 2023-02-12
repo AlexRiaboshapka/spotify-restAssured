@@ -50,7 +50,7 @@ public class RestAssuredCommon {
         return given(getAccountRequestSpecification())
                 .formParams(formParams)
                 .when()
-                .post("https://accounts.spotify.com/api/token")
+                .post()
                 .then()
                 .spec(getResponseSpecification())
                 .extract()
