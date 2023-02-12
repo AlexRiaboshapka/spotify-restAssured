@@ -4,6 +4,7 @@ import io.restassured.response.Response;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.HashMap;
 
 import static com.spotify.aouth2.api.SpecBuilder.getResponseSpecification;
@@ -11,8 +12,10 @@ import static io.restassured.RestAssured.given;
 import static java.nio.file.Files.readString;
 
 public class TokenManager {
-    static Path path = Path.of("src/test/resources/tokens/refresh_token");
-    static String refresh_token;
+    private static final Path path = Path.of("src/test/resources/tokens/refresh_token");
+    private static final String refresh_token;
+    private static String access_token;
+    private static Instant expires_at;
 
     static {
         try {
@@ -22,7 +25,24 @@ public class TokenManager {
         }
     }
 
-    public static String tokenRefresh() {
+    public static String getToken() {
+        try {
+            if (access_token == null || Instant.now().isAfter(expires_at)) {
+                System.out.println("New token is generated");
+                Response response = tokenRefresh();
+                access_token = response.path("access_token");
+                int expiresInSeconds = response.path("expires_in");
+                expires_at = Instant.now().plusSeconds(expiresInSeconds - 60);
+            } else {
+                System.out.println("Token is still valid");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to renew token");
+        }
+        return access_token;
+    }
+
+    public static Response tokenRefresh() {
         HashMap<String, String> formParams = new HashMap<>();
         formParams.put("grant_type", "refresh_token");
         formParams.put("refresh_token", refresh_token);
@@ -43,7 +63,7 @@ public class TokenManager {
         if (response.statusCode() != 200) {
             throw new RuntimeException("Token refresh failed");
         } else {
-            return response.jsonPath().getString("access_token");
+            return response;
         }
     }
 }
