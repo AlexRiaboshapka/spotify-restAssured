@@ -4,8 +4,7 @@ import io.restassured.response.Response;
 
 import java.util.HashMap;
 
-import static com.spotify.aouth2.api.SpecBuilder.getRequestSpecification;
-import static com.spotify.aouth2.api.SpecBuilder.getResponseSpecification;
+import static com.spotify.aouth2.api.SpecBuilder.*;
 import static io.restassured.RestAssured.given;
 
 public class RestAssuredCommon {
@@ -48,10 +47,8 @@ public class RestAssuredCommon {
     }
 
     public static Response postAccount(HashMap<String, String> formParams) {
-        return given()
-                .contentType("application/x-www-form-urlencoded")
+        return given(getAccountRequestSpecification())
                 .formParams(formParams)
-                .log().all()
                 .when()
                 .post("https://accounts.spotify.com/api/token")
                 .then()
