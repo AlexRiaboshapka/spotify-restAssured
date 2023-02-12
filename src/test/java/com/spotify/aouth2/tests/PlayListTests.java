@@ -5,7 +5,6 @@ import com.spotify.aouth2.pojo.Playlist;
 import com.spotify.aouth2.pojo.PlaylistError;
 import io.restassured.response.Response;
 import org.assertj.core.api.SoftAssertions;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
@@ -18,10 +17,6 @@ public class PlayListTests {
         softly = new SoftAssertions();
     }
 
-    @AfterTest
-    public void afterClass() {
-        softly.assertAll();
-    }
 
     @Test
     public void createPlayList() {
@@ -40,6 +35,7 @@ public class PlayListTests {
         softly.assertThat(playlistResponse.getPublic()).isEqualTo(playlist.getPublic());
         softly.assertThat(playlistResponse.getName()).isEqualTo(playlist.getName());
         softly.assertThat(playlistResponse.getDescription()).isEqualTo(playlist.getDescription());
+        softly.assertAll();
     }
 
     @Test
@@ -72,8 +68,7 @@ public class PlayListTests {
         softly.assertThat(playlistResponseAfterUpdate.getName()).isEqualTo("My Updated Playlist123");
         softly.assertThat(playlistResponseAfterUpdate.getDescription())
                 .isEqualTo("Updated Playlist123 description");
-
-
+        softly.assertAll();
     }
 
     @Test
@@ -83,13 +78,13 @@ public class PlayListTests {
                 .setDescription("New Playlist123 description")
                 .setPublic(false);
 
-
         Response responsePlaylistError = PlayListApi.post(playlistWithNoName);
         responsePlaylistError.then().assertThat().statusCode(400);
         PlaylistError playlistError = responsePlaylistError.as(PlaylistError.class);
         softly.assertThat(playlistError.getError().getStatus()).isEqualTo(400);
         softly.assertThat(playlistError.getError().getMessage())
                 .isEqualTo("Missing required field: name");
+        softly.assertAll();
 
     }
 
@@ -105,5 +100,6 @@ public class PlayListTests {
         PlaylistError playlistError = responsePlaylistError.as(PlaylistError.class);
         softly.assertThat(playlistError.getError().getStatus()).isEqualTo(401);
         softly.assertThat(playlistError.getError().getMessage()).isEqualTo("Invalid access token");
+        softly.assertAll();
     }
 }
