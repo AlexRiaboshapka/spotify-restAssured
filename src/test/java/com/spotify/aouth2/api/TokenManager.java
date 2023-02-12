@@ -1,5 +1,6 @@
 package com.spotify.aouth2.api;
 
+import com.spotify.aouth2.utils.ConfigLoader;
 import io.restassured.response.Response;
 
 import java.io.IOException;
@@ -43,10 +44,10 @@ public class TokenManager {
 
     private static Response tokenRefresh() {
         HashMap<String, String> formParams = new HashMap<>();
-        formParams.put("grant_type", "refresh_token");
+        formParams.put("grant_type", ConfigLoader.getInstance().getGrantType());
         formParams.put("refresh_token", refresh_token);
-        formParams.put("client_id", "1790330e790846e491848a3302ec071a");
-        formParams.put("client_secret", "230a41908d8e44cfb7cfd8a687e3244a");
+        formParams.put("client_id", ConfigLoader.getInstance().getClientId());
+        formParams.put("client_secret", ConfigLoader.getInstance().getClientSecret());
 
         Response response = postAccount(formParams);
 

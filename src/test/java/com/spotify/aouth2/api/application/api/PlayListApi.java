@@ -2,6 +2,7 @@ package com.spotify.aouth2.api.application.api;
 
 import com.spotify.aouth2.api.RestAssuredCommon;
 import com.spotify.aouth2.pojo.Playlist;
+import com.spotify.aouth2.utils.ConfigLoader;
 import io.restassured.response.Response;
 
 import static com.spotify.aouth2.api.ApiRoute.PLAYLIST;
@@ -12,12 +13,12 @@ public class PlayListApi {
 
     public static Response post(Playlist playlist) {
         return RestAssuredCommon
-                .post(USERS + "/31v5r5wfy4gnsl7c5eujg2fpf4oq" + PLAYLIST, getToken(), playlist);
+                .post(USERS + "/" + ConfigLoader.getInstance().getUserId() + PLAYLIST, getToken(), playlist);
     }
 
     public static Response post(String token, Playlist playlist) {
         return RestAssuredCommon
-                .post(USERS + "/31v5r5wfy4gnsl7c5eujg2fpf4oq" + PLAYLIST, token, playlist);
+                .post(USERS + "/" + ConfigLoader.getInstance().getUserId() + PLAYLIST, token, playlist);
     }
 
     public static Response get(String id) {
