@@ -7,8 +7,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
 
-import static com.spotify.aouth2.api.SpecBuilder.getResponseSpecification;
-import static io.restassured.RestAssured.given;
+import static com.spotify.aouth2.api.RestAssuredCommon.postAccount;
 import static java.nio.file.Files.readString;
 
 public class TokenManager {
@@ -42,23 +41,14 @@ public class TokenManager {
         return access_token;
     }
 
-    public static Response tokenRefresh() {
+    private static Response tokenRefresh() {
         HashMap<String, String> formParams = new HashMap<>();
         formParams.put("grant_type", "refresh_token");
         formParams.put("refresh_token", refresh_token);
         formParams.put("client_id", "1790330e790846e491848a3302ec071a");
         formParams.put("client_secret", "230a41908d8e44cfb7cfd8a687e3244a");
 
-        Response response = given()
-                .contentType("application/x-www-form-urlencoded")
-                .formParams(formParams)
-                .log().all()
-                .when()
-                .post("https://accounts.spotify.com/api/token")
-                .then()
-                .spec(getResponseSpecification())
-                .extract()
-                .response();
+        Response response = postAccount(formParams);
 
         if (response.statusCode() != 200) {
             throw new RuntimeException("Token refresh failed");
