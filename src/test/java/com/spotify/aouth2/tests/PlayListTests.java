@@ -17,25 +17,14 @@ public class PlayListTests {
         softly = new SoftAssertions();
     }
 
-
     @Test
     public void createPlayList() {
-
-        Playlist playlist = new Playlist()
-                .setName("My New Playlist")
-                .setDescription("New Playlist description")
-                .setPublic(false);
-
+        Playlist playlist = playlist("My New Playlist", "New Playlist description", false);
         Response postResponse = PlayListApi.post(playlist);
         postResponse.then().assertThat().statusCode(201);
         Playlist playlistResponse = postResponse.as(Playlist.class);
-
         id = playlistResponse.getId();
-
-        softly.assertThat(playlistResponse.getPublic()).isEqualTo(playlist.getPublic());
-        softly.assertThat(playlistResponse.getName()).isEqualTo(playlist.getName());
-        softly.assertThat(playlistResponse.getDescription()).isEqualTo(playlist.getDescription());
-        softly.assertAll();
+        assertPlaylist(playlist, playlistResponse);
     }
 
     @Test
@@ -47,11 +36,8 @@ public class PlayListTests {
 
     @Test
     public void updateThePlayList() {
-
-        Playlist playlistUpdated = new Playlist()
-                .setName("My Updated Playlist123")
-                .setDescription("Updated Playlist123 description")
-                .setPublic(false);
+        Playlist playlistUpdated = playlist("My Updated Playlist123",
+                "Updated Playlist123 description", false);
         PlayListApi
                 .put(id, playlistUpdated)
                 .then().assertThat().statusCode(200);
@@ -59,47 +45,53 @@ public class PlayListTests {
 
     @Test(dependsOnMethods = {"updateThePlayList"})
     public void getPlayListsAfterUpdate() {
+        Playlist expectedPlayList =
+                playlist("My Updated Playlist123", "Updated Playlist123 description", false);
 
         Response getResponseAfterUpdate = PlayListApi.get(id);
         getResponseAfterUpdate.then().assertThat().statusCode(200);
         Playlist playlistResponseAfterUpdate = getResponseAfterUpdate.as(Playlist.class);
-
-        softly.assertThat(playlistResponseAfterUpdate.getPublic()).isEqualTo(false);
-        softly.assertThat(playlistResponseAfterUpdate.getName()).isEqualTo("My Updated Playlist123");
-        softly.assertThat(playlistResponseAfterUpdate.getDescription())
-                .isEqualTo("Updated Playlist123 description");
-        softly.assertAll();
+        assertPlaylist(expectedPlayList, playlistResponseAfterUpdate);
     }
 
     @Test
     public void failedToCreatePlayListWithNoName() {
-
         Playlist playlistWithNoName = new Playlist()
                 .setDescription("New Playlist123 description")
                 .setPublic(false);
 
         Response responsePlaylistError = PlayListApi.post(playlistWithNoName);
         responsePlaylistError.then().assertThat().statusCode(400);
-        PlaylistError playlistError = responsePlaylistError.as(PlaylistError.class);
-        softly.assertThat(playlistError.getError().getStatus()).isEqualTo(400);
-        softly.assertThat(playlistError.getError().getMessage())
-                .isEqualTo("Missing required field: name");
-        softly.assertAll();
-
+        assertErrorResponse(responsePlaylistError.as(PlaylistError.class),
+                400, "Missing required field: name");
     }
 
     @Test
     public void failedToCreatePlayListWithExpiredToken() {
-
-        Playlist playlist = new Playlist()
-                .setName("My New Playlist123")
-                .setDescription("New Playlist123 description")
-                .setPublic(false);
+        Playlist playlist = playlist("My New Playlist123", "New Playlist123 description", false);
         String accessToke = "12345";
         Response responsePlaylistError = PlayListApi.post(accessToke, playlist);
-        PlaylistError playlistError = responsePlaylistError.as(PlaylistError.class);
-        softly.assertThat(playlistError.getError().getStatus()).isEqualTo(401);
-        softly.assertThat(playlistError.getError().getMessage()).isEqualTo("Invalid access token");
+        assertErrorResponse(responsePlaylistError.as(PlaylistError.class),
+                401, "Invalid access token");
+    }
+
+    private void assertPlaylist(Playlist playlist, Playlist playlistResponse) {
+        softly.assertThat(playlistResponse.getPublic()).isEqualTo(playlist.getPublic());
+        softly.assertThat(playlistResponse.getName()).isEqualTo(playlist.getName());
+        softly.assertThat(playlistResponse.getDescription()).isEqualTo(playlist.getDescription());
+        softly.assertAll();
+    }
+
+    public Playlist playlist(String name, String description, Boolean _public) {
+        return new Playlist()
+                .setName(name)
+                .setDescription(description)
+                .setPublic(_public);
+    }
+
+    private void assertErrorResponse(PlaylistError playlistError, int expected, String expected1) {
+        softly.assertThat(playlistError.getError().getStatus()).isEqualTo(expected);
+        softly.assertThat(playlistError.getError().getMessage()).isEqualTo(expected1);
         softly.assertAll();
     }
 }
