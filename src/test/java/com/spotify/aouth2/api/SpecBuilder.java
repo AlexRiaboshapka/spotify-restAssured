@@ -1,5 +1,6 @@
 package com.spotify.aouth2.api;
 
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -16,6 +17,7 @@ public class SpecBuilder {
                 .setBaseUri(BASE_URL)
                 .addHeader("Content-Type", "application/json")
                 .setBasePath(BASE_PATH)
+                .addFilter(new AllureRestAssured())
                 .log(LogDetail.ALL).build();
     }
 
@@ -24,6 +26,7 @@ public class SpecBuilder {
                 .setBaseUri(BASE_URL_ACCOUNT)
                 .setBasePath(API + TOKEN)
                 .setContentType(ContentType.URLENC)
+                .addFilter(new AllureRestAssured())
                 .log(LogDetail.ALL).build();
     }
 
