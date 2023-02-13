@@ -8,6 +8,8 @@ import io.restassured.response.Response;
 import org.assertj.core.api.SoftAssertions;
 import org.testng.annotations.Test;
 
+import static com.spotify.aouth2.utils.FakerUtils.genDescription;
+import static com.spotify.aouth2.utils.FakerUtils.genName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -30,7 +32,7 @@ public class PlayListTests {
     @Test(description = "Create a play list")
     @Story("Alex creates his playlist")
     public void createPlayList() {
-        Playlist playlist = playlistBuilder("My New Playlist", "New Playlist description", false);
+        Playlist playlist = playlistBuilder(genName(), genDescription(), false);
         Response postResponse = PlayListApi.post(playlist);
         assertStatusCode(postResponse.statusCode(), 201);
         Playlist playlistResponse = postResponse.as(Playlist.class);
@@ -69,8 +71,8 @@ public class PlayListTests {
     @Test
     @Story("Alex creates his playlist")
     public void failedToCreatePlayListWithNoName() {
-        Playlist playlistWithNoName = Playlist
-                .builder().description("New Playlist123 description")._public(false).build();
+        Playlist playlistWithNoName =
+                playlistBuilder("", genDescription(), false);
 
         Response responsePlaylistError = PlayListApi.post(playlistWithNoName);
         assertStatusCode(responsePlaylistError.statusCode(), 400);
@@ -81,7 +83,7 @@ public class PlayListTests {
     @Test
     @Story("Alex creates his playlist")
     public void failedToCreatePlayListWithExpiredToken() {
-        Playlist playlist = playlistBuilder("My New Playlist123", "New Playlist123 description", false);
+        Playlist playlist = playlistBuilder(genName(), genDescription(), false);
         String accessToke = "12345";
         Response responsePlaylistError = PlayListApi.post(accessToke, playlist);
         assertStatusCode(responsePlaylistError.statusCode(), 401);

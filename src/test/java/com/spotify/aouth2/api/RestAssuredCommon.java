@@ -11,7 +11,7 @@ public class RestAssuredCommon {
 
     public static Response post(String path, String token, Object payload) {
         return given(getRequestSpecification())
-                .header("Authorization", "Bearer " + token)
+                .auth().oauth2(token)
                 .body(payload)
                 .when()
                 .post(path)
@@ -24,7 +24,7 @@ public class RestAssuredCommon {
     public static Response get(String path, String accessToken) {
         return given()
                 .spec(getRequestSpecification())
-                .header("Authorization", "Bearer " + accessToken)
+                .auth().oauth2(accessToken)
                 .when()
                 .get(path)
                 .then()
@@ -36,7 +36,7 @@ public class RestAssuredCommon {
 
     public static Response put(String path, String accessToken, Object payload) {
         return given(getRequestSpecification())
-                .header("Authorization", "Bearer " + accessToken)
+                .auth().oauth2(accessToken)
                 .body(payload)
                 .when()
                 .put(path)
