@@ -1,5 +1,6 @@
 package com.spotify.aouth2.tests;
 
+import com.spotify.aouth2.api.StatusCode;
 import com.spotify.aouth2.api.application.api.PlayListApi;
 import com.spotify.aouth2.pojo.Playlist;
 import com.spotify.aouth2.pojo.PlaylistError;
@@ -15,13 +16,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 @Epic("Spotify Oauth 2.0")
 @Feature("Playlist API")
-public class PlayListTests {
-    private static String id;
+public class PlayListTests extends BaseTest {
+     private static String id;
     private SoftAssertions softly;
 
     @Step
-    private static void assertStatusCode(int actualStatusCode, int expectedCode) {
-        assertThat(actualStatusCode, equalTo(expectedCode));
+    private static void assertStatusCode(int actualStatusCode, StatusCode statusCode) {
+        assertThat(actualStatusCode, equalTo(statusCode.code));
     }
 
     @Link("https://example.org")
@@ -34,7 +35,7 @@ public class PlayListTests {
     public void createPlayList() {
         Playlist playlist = playlistBuilder(genName(), genDescription(), false);
         Response postResponse = PlayListApi.post(playlist);
-        assertStatusCode(postResponse.statusCode(), 201);
+        assertStatusCode(postResponse.statusCode(), StatusCode.CODE_201);
         Playlist playlistResponse = postResponse.as(Playlist.class);
         id = playlistResponse.getId();
         assertPlaylist(playlist, playlistResponse);
@@ -44,7 +45,7 @@ public class PlayListTests {
     public void getPlayLists() {
         Response getResponse =
                 PlayListApi.get(id);
-        assertStatusCode(getResponse.statusCode(), 200);
+        assertStatusCode(getResponse.statusCode(), StatusCode.CODE_200);
     }
 
     @Test
@@ -54,7 +55,7 @@ public class PlayListTests {
         Response response = PlayListApi
                 .put(id, playlistUpdated)
                 .then().extract().response();
-        assertStatusCode(response.statusCode(), 200);
+        assertStatusCode(response.statusCode(), StatusCode.CODE_200);
     }
 
     @Test(dependsOnMethods = {"updateThePlayList"})
@@ -63,7 +64,7 @@ public class PlayListTests {
                 playlistBuilder("My Updated Playlist123", "Updated Playlist123 description", false);
 
         Response getResponseAfterUpdate = PlayListApi.get(id);
-        assertStatusCode(getResponseAfterUpdate.statusCode(), 200);
+        assertStatusCode(getResponseAfterUpdate.statusCode(), StatusCode.CODE_200);
         Playlist playlistResponseAfterUpdate = getResponseAfterUpdate.as(Playlist.class);
         assertPlaylist(expectedPlayList, playlistResponseAfterUpdate);
     }
@@ -75,9 +76,9 @@ public class PlayListTests {
                 playlistBuilder("", genDescription(), false);
 
         Response responsePlaylistError = PlayListApi.post(playlistWithNoName);
-        assertStatusCode(responsePlaylistError.statusCode(), 400);
+        assertStatusCode(responsePlaylistError.statusCode(), StatusCode.CODE_400);
         assertErrorResponse(responsePlaylistError.as(PlaylistError.class),
-                400, "Missing required field: name");
+                StatusCode.CODE_400);
     }
 
     @Test
@@ -86,9 +87,9 @@ public class PlayListTests {
         Playlist playlist = playlistBuilder(genName(), genDescription(), false);
         String accessToke = "12345";
         Response responsePlaylistError = PlayListApi.post(accessToke, playlist);
-        assertStatusCode(responsePlaylistError.statusCode(), 401);
+        assertStatusCode(responsePlaylistError.statusCode(), StatusCode.CODE_401);
         assertErrorResponse(responsePlaylistError.as(PlaylistError.class),
-                401, "Invalid access token");
+                StatusCode.CODE_401);
     }
 
     @Step
@@ -106,10 +107,10 @@ public class PlayListTests {
     }
 
     @Step
-    private void assertErrorResponse(PlaylistError playlistError, int expected, String expected1) {
+    private void assertErrorResponse(PlaylistError playlistError, StatusCode statusCode) {
         softly = new SoftAssertions();
-        softly.assertThat(playlistError.getError().getStatus()).isEqualTo(expected);
-        softly.assertThat(playlistError.getError().getMessage()).isEqualTo(expected1);
+        softly.assertThat(playlistError.getError().getStatus()).isEqualTo(statusCode.code);
+        softly.assertThat(playlistError.getError().getMessage()).isEqualTo(statusCode.msg);
         softly.assertAll();
     }
 }

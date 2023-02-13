@@ -25,7 +25,7 @@ public class TokenManager {
         }
     }
 
-    public static String getToken() {
+    public synchronized static String getToken() {
         try {
             if (access_token == null || Instant.now().isAfter(expires_at)) {
                 System.out.println("New token is generated");

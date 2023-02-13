@@ -1,5 +1,7 @@
 package com.spotify.aouth2.api;
 
+
+
 public class ApiRoute {
     public static final String PLAYLIST = "/playlists";
     public static final String TOKEN = "/token";
